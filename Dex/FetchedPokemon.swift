@@ -40,8 +40,8 @@ struct FetchedPokemon : Decodable {
         }
         
         enum SpriteKeys: String, CodingKey {
-            case sprite = "fronDefault"
-            case shiny = ""
+            case sprite = "frontDefault"
+            case shiny = "frontShiny"
         }
     }
     
