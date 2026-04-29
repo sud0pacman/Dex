@@ -19,15 +19,39 @@ struct ContentView: View {
     private var fetcher = FetchService()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 ForEach(pokedex) { pokemon in
-                    NavigationLink {
-                        Text(pokemon.name ?? "no name")
-                    } label: {
-                        Text(pokemon.name ?? "no name")
+                    NavigationLink(value: pokemon) {
+                        AsyncImage(url: pokemon.sprite) { image in
+                            image.resizable()
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: 100, height: 100)
+                        
+                        VStack(alignment: .leading) {
+                            Text(pokemon.name!.capitalized)
+                                .fontWeight(.bold)
+                            
+                            HStack {
+                                ForEach(pokemon.types!, id: \.self) { type in
+                                    Text(type)
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(.black)
+                                        .padding(.horizontal, 13)
+                                        .padding(.vertical, 5)
+                                        .background(Color(type.capitalized))
+                                        .clipShape(.capsule)
+                                }
+                            }
+                        }
                     }
                 }
+            }
+            .navigationDestination(for: Pokemon.self) { pokemon in
+                Text(pokemon.name ?? "no name")
             }
             .toolbar {
 #if os(iOS)
@@ -41,7 +65,6 @@ struct ContentView: View {
                     }
                 }
             }
-            Text("Select an item")
         }
     }
     
