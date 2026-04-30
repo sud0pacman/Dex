@@ -18,7 +18,7 @@ struct PokemonDetail: View {
     var body: some View {
         ScrollView {
             ZStack {
-                Image(.normalgrasselectricpoisonfairy)
+                Image(pokemon.backgroundImage)
                     .resizable()
                     .scaledToFit()
                     .shadow(color: .black, radius: 6)
@@ -60,12 +60,20 @@ struct PokemonDetail: View {
                         print("PokemonDeatil: \(error)")
                     }
                 } label: {
-                    Image(systemName: pokemon.favorite ? "star.fil" : "star")
+                    Image(systemName: pokemon.favorite ? "star.fill" : "star")
                         .font(.largeTitle )
                         .tint(.yellow)
                 }
             }
             .padding()
+            
+            Text("Stats")
+                .font(.title)
+                .padding(.bottom, -7)
+            
+            Stats(pokemon: pokemon)
+            
+             
         }
         .navigationTitle(pokemon.name!.capitalized)
     }
