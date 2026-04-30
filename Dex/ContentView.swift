@@ -10,6 +10,11 @@ import CoreData
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    
+    @FetchRequest(
+        sortDescriptors: [],
+        animation: .default
+    ) private var all: FetchedResults<Pokemon>
 
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Pokemon.id, ascending: true)],
@@ -39,7 +44,7 @@ struct ContentView: View {
     }
 
     var body: some View {
-        if pokedex.isEmpty {
+        if all.isEmpty {
             ContentUnavailableView {
                 Label("No Pokemon", image: .nopokemon)
             } description: {
@@ -88,9 +93,21 @@ struct ContentView: View {
                                     }
                                 }
                             }
+                            .swipeActions(edge: .leading) {
+                                Button(pokemon.favorite ? "Remove from Favorites" : "Add to Favorites", systemImage: "star") {
+                                    pokemon.favorite.toggle()
+                                    
+                                    do {
+                                        try viewContext.save()
+                                    } catch {
+                                        print("❌ Failed to update favorite: \(error)")
+                                    }
+                                }
+                                .tint(pokemon.favorite ? .gray : .yellow)
+                            }
                         }
                     } footer: {
-                        if pokedex.count < 151 {
+                        if all.count < 151 {
                             ContentUnavailableView {
                                 Label("Missing Pokemon", image: .nopokemon)
                             } description: {
