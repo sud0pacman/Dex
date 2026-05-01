@@ -14,7 +14,7 @@ struct FetchService {
     
     private let baseURL: URL = URL(string: "https://pokeapi.co/api/v2/pokemon")!
     
-    func fetchPokemon(_ id: Int) async throws -> FetchedPokemon {
+    func fetchPokemon(_ id: Int) async throws -> Pokemon {
         let url = baseURL.appending(path: "\(id)")
         
         let (data, response) = try await URLSession.shared.data(from: url)
@@ -26,7 +26,7 @@ struct FetchService {
         let decocder = JSONDecoder()
         decocder.keyDecodingStrategy = .convertFromSnakeCase
         
-        let pokemon = try decocder.decode(FetchedPokemon.self, from: data)
+        let pokemon = try decocder.decode(Pokemon.self, from: data)
         
         print("Fetched pokemon: \(pokemon.id): \(pokemon.name.capitalized)")
         
