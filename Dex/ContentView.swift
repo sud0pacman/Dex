@@ -6,20 +6,12 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.modelContext) private var modelContext
     
-    @FetchRequest(
-        sortDescriptors: [],
-        animation: .default
-    ) private var all: FetchedResults<Pokemon>
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Pokemon.id, ascending: true)],
-        animation: .default)
-    private var pokedex: FetchedResults<Pokemon>
+    @Query(sort: \Pokemon.id, animation: .default) private var pokedex: [Pokemon]
     
     @State private var searchText: String = ""
     @State private var filterByFavorite: Bool = false
@@ -44,7 +36,7 @@ struct ContentView: View {
     }
 
     var body: some View {
-        if all.isEmpty {
+        if pokedex.isEmpty {
             ContentUnavailableView {
                 Label("No Pokemon", image: .nopokemon)
             } description: {
@@ -77,7 +69,7 @@ struct ContentView: View {
                                 
                                 VStack(alignment: .leading) {
                                     HStack {
-                                        Text(pokemon.name!.capitalized)
+                                        Text(pokemon.name.capitalized)
                                             .fontWeight(.bold)
                                         
                                         if pokemon.favorite {
@@ -87,7 +79,7 @@ struct ContentView: View {
                                     }
                                     
                                     HStack {
-                                        ForEach(pokemon.types!, id: \.self) { type in
+                                        ForEach(pokemon.types, id: \.self) { type in
                                             Text(type)
                                                 .font(.subheadline)
                                                 .fontWeight(.semibold)
@@ -101,13 +93,16 @@ struct ContentView: View {
                                 }
                             }
                             .swipeActions(edge: .leading) {
-                                Button(pokemon.favorite ? "Remove from Favorites" : "Add to Favorites", systemImage: "star") {
+                                let buttonTitle = pokemon.favorite ? "Remove from Favorites" : "Add to Favorites"
+                                let iconName = pokemon.favorite ? "star.fill" : "star"
+
+                                Button(buttonTitle, systemImage: iconName) {
                                     pokemon.favorite.toggle()
                                     
                                     do {
-                                        try viewContext.save()
+                                        try modelContext.save()
                                     } catch {
-                                        print("❌ Failed to update favorite: \(error)")
+                                        print(error)
                                     }
                                 }
                                 .tint(pokemon.favorite ? .gray : .yellow)
@@ -131,15 +126,8 @@ struct ContentView: View {
                 .navigationTitle(Text("Pokédex"))
                 .searchable(text: $searchText, prompt: "Find a Pokemon")
                 .autocorrectionDisabled(true)
-                .onChange(of: searchText) {
-                    pokedex.nsPredicate = dynamicPredicate
-                }
-                .onChange(of: filterByFavorite) {
-                    pokedex.nsPredicate = dynamicPredicate
-                }
                 .navigationDestination(for: Pokemon.self) { pokemon in
-                    PokemonDetail()
-                        .environmentObject(pokemon)
+                    PokemonDetail(pokemon: pokemon)
                 }
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -160,20 +148,8 @@ struct ContentView: View {
             for id in id..<152 {
                 do {
                     let fetchedPokemon = try await fetcher.fetchPokemon(id)
-                    let pokemon = Pokemon(context: viewContext)
-                    pokemon.id = fetchedPokemon.id
-                    pokemon.name = fetchedPokemon.name
-                    pokemon.types = fetchedPokemon.types
-                    pokemon.hp = fetchedPokemon.hp
-                    pokemon.attack = fetchedPokemon.attack
-                    pokemon.defense = fetchedPokemon.defense
-                    pokemon.specialAttack = fetchedPokemon.specialAttack
-                    pokemon.specialDefense = fetchedPokemon.specialDefense
-                    pokemon.speed = fetchedPokemon.speed
-                    pokemon.spriteURL = fetchedPokemon.spriteURL
-                    pokemon.shinyURL = fetchedPokemon.shinyURL
                     
-                    try viewContext.save()
+                    modelContext.insert(fetchedPokemon)
                 } catch {
                     print("UI Error fetch pokemon: \(error)")
                 }
@@ -186,13 +162,13 @@ struct ContentView: View {
     private func storeSprites() {
         Task {
             do {
-                for pokemon in all {
-                    pokemon.sprite = try await URLSession.shared.data(from: pokemon.spriteURL!).0
-                    pokemon.shiny = try await URLSession.shared.data(from: pokemon.shinyURL!).0
+                for pokemon in pokedex {
+                    pokemon.sprite = try await URLSession.shared.data(from: pokemon.spriteURL).0
+                    pokemon.shiny = try await URLSession.shared.data(from: pokemon.shinyURL).0
                     
-                    try viewContext.save()
+                    try modelContext.save()
                     
-                    print("Sprites stored: \(pokemon.id) : \(pokemon.name?.capitalized ?? "no name")")
+                    print("Sprites stored: \(pokemon.id) : \(pokemon.name.capitalized)")
                 }
             } catch {
                 print("❌ Error: \(error)")
@@ -202,5 +178,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+    ContentView().modelContainer(PersistenceController.preview)
 }

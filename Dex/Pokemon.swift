@@ -10,7 +10,7 @@ import Foundation
 import SwiftData
 import SwiftUI
 
-@Model
+@Model @MainActor
 class Pokemon: Decodable {
     @Attribute(.unique) var id: Int
     var name: String
@@ -25,7 +25,7 @@ class Pokemon: Decodable {
     var shinyURL: URL
     var sprite: Data?
     var shiny: Data?
-    var favorite: Bool? = false
+    var favorite: Bool = false
     
     enum CodingKeys: CodingKey {
         case id
