@@ -10,7 +10,7 @@ import Foundation
 import SwiftData
 import SwiftUI
 
-@Model @MainActor
+@Model
 class Pokemon: Decodable {
     @Attribute(.unique) var id: Int
     var name: String
@@ -103,6 +103,7 @@ class Pokemon: Decodable {
         shinyURL = try spriteContainer.decode(URL.self, forKey: .shinyURL)
     }
     
+    @MainActor
     var spriteImage: Image {
         if let data = sprite, let image = UIImage(data: data) {
             Image(uiImage: image)
@@ -111,6 +112,7 @@ class Pokemon: Decodable {
         }
     }
     
+    @MainActor
     var shinyImage: Image {
         if let data = shiny, let image = UIImage(data: data) {
             Image(uiImage: image)
@@ -119,6 +121,7 @@ class Pokemon: Decodable {
         }
     }
     
+    @MainActor
     var backgroundImage: ImageResource {
         switch types[0] {
         case "rock", "ground", "steel", "fighting", "ghost", "dark", "psychic":
@@ -136,6 +139,7 @@ class Pokemon: Decodable {
         }
     }
     
+    @MainActor
     var typeColor: Color {
         Color(types[0].capitalized)
     }

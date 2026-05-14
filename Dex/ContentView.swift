@@ -109,7 +109,7 @@ struct ContentView: View {
                             }
                         }
                     } footer: {
-                        if all.count < 151 {
+                        if pokedex.count < 151 {
                             ContentUnavailableView {
                                 Label("Missing Pokemon", image: .nopokemon)
                             } description: {
@@ -145,9 +145,9 @@ struct ContentView: View {
     
     private func getPokemon(from id: Int) {
         Task {
-            for id in id..<152 {
+            for i in id..<152 {
                 do {
-                    let fetchedPokemon = try await fetcher.fetchPokemon(id)
+                    let fetchedPokemon = try await fetcher.fetchPokemon(i)
                     
                     modelContext.insert(fetchedPokemon)
                 } catch {
