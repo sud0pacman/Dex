@@ -31,6 +31,8 @@ struct ContentView: View {
             }
         }
     }
+    
+    @State private var showShiny: Bool = false
 
     var body: some View {
         if pokedex.isEmpty {
@@ -51,14 +53,14 @@ struct ContentView: View {
                         ForEach((try? pokedex.filter(dynamicPredicate)) ?? pokedex) { pokemon in
                             NavigationLink(value: pokemon) {
                                 if pokemon.sprite == nil {
-                                    AsyncImage(url: pokemon.spriteURL) { image in
+                                    AsyncImage(url: showShiny ? pokemon.shinyURL : pokemon.spriteURL) { image in
                                         image.resizable()
                                     } placeholder: {
                                         ProgressView()
                                     }
                                     .frame(width: 100, height: 100)
                                 } else {
-                                    pokemon.spriteImage
+                                    (showShiny ? pokemon.shinyImage : pokemon.spriteImage)
                                         .resizable()
                                         .scaledToFit()
                                         .frame(width: 100, height: 100)
@@ -128,7 +130,7 @@ struct ContentView: View {
                     PokemonDetail(pokemon: pokemon)
                 }
                 .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             withAnimation {
                                 filterByFavorite.toggle()
@@ -137,6 +139,15 @@ struct ContentView: View {
                             Label("Filter by Favorite", systemImage: filterByFavorite ? "star.fill" : "star")
                         }
                         .tint(.yellow)
+                    }
+                    
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showShiny.toggle()
+                        } label: {
+                            Image(systemName: showShiny ? "wand.and.stars" : "wand.and.stars.inverse")
+                                .foregroundStyle(showShiny ? .yellow : .primary)
+                        }
                     }
                 }
             }
