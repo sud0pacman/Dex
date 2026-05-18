@@ -33,7 +33,8 @@ struct ContentView: View {
     }
     
     @State private var showShiny: Bool = false
-
+    @State var currentType: PokemonFilterType = PokemonFilterType.all
+ 
     var body: some View {
         if pokedex.isEmpty {
             ContentUnavailableView {
@@ -52,44 +53,7 @@ struct ContentView: View {
                     Section {
                         ForEach((try? pokedex.filter(dynamicPredicate)) ?? pokedex) { pokemon in
                             NavigationLink(value: pokemon) {
-                                if pokemon.sprite == nil {
-                                    AsyncImage(url: showShiny ? pokemon.shinyURL : pokemon.spriteURL) { image in
-                                        image.resizable()
-                                    } placeholder: {
-                                        ProgressView()
-                                    }
-                                    .frame(width: 100, height: 100)
-                                } else {
-                                    (showShiny ? pokemon.shinyImage : pokemon.spriteImage)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 100, height: 100)
-                                }
-                                
-                                VStack(alignment: .leading) {
-                                    HStack {
-                                        Text(pokemon.name.capitalized)
-                                            .fontWeight(.bold)
-                                        
-                                        if pokemon.favorite {
-                                            Image(systemName: "star.fill")
-                                                .foregroundColor(.yellow)
-                                        }
-                                    }
-                                    
-                                    HStack {
-                                        ForEach(pokemon.types, id: \.self) { type in
-                                            Text(type)
-                                                .font(.subheadline)
-                                                .fontWeight(.semibold)
-                                                .foregroundStyle(.black)
-                                                .padding(.horizontal, 13)
-                                                .padding(.vertical, 5)
-                                                .background(Color(type.capitalized))
-                                                .clipShape(.capsule)
-                                        }
-                                    }
-                                }
+                                PokemonItem(pokemon: pokemon, showShiny: showShiny)
                             }
                             .swipeActions(edge: .leading) {
                                 let buttonTitle = pokemon.favorite ? "Remove from Favorites" : "Add to Favorites"
@@ -122,7 +86,7 @@ struct ContentView: View {
                         }
                     }
                 }
-                .navigationTitle(Text("Pokédex"))
+                .navigationTitle("Pokédex")
                 .searchable(text: $searchText, prompt: "Find a Pokemon")
                 .autocorrectionDisabled(true)
                 .animation(.default, value: searchText)
@@ -147,6 +111,19 @@ struct ContentView: View {
                         } label: {
                             Image(systemName: showShiny ? "wand.and.stars" : "wand.and.stars.inverse")
                                 .foregroundStyle(showShiny ? .yellow : .primary)
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Menu {
+                            Picker("Filter Options", selection: $currentType) {
+                                ForEach(PokemonFilterType.allCases, id: \.self) { type in
+                                    Text(type.icon + " " + type.rawValue.capitalized).tag(type.rawValue)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                        } label: {
+                            Label("Filter", systemImage: "line.horizontal.3.decrease.circle")
                         }
                     }
                 }
@@ -190,4 +167,62 @@ struct ContentView: View {
 
 #Preview {
     ContentView().modelContainer(PersistenceController.preview)
+}
+
+struct PokemonItem: View {
+    var pokemon: Pokemon
+    var showShiny: Bool
+    
+    var body: some View {
+        HStack {
+            PokemonImage(pokemon: pokemon, showShiny: showShiny)
+            
+            VStack(alignment: .leading) {
+                HStack {
+                    
+                    Text(pokemon.name.capitalized)
+                        .fontWeight(.bold)
+                    
+                    if pokemon.favorite {
+                        Image(systemName: "star.fill")
+                            .foregroundColor(.yellow)
+                    }
+                }
+                
+                HStack {
+                    ForEach(pokemon.types, id: \.self) { type in
+                        Text(type)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.black)
+                            .padding(.horizontal, 13)
+                            .padding(.vertical, 5)
+                            .background(Color(type.capitalized))
+                            .clipShape(.capsule)
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct PokemonImage: View {
+    var pokemon: Pokemon
+    var showShiny: Bool
+    
+    var body: some View {
+        if pokemon.sprite == nil {
+            AsyncImage(url: showShiny ? pokemon.shinyURL : pokemon.spriteURL) { image in
+                image.resizable()
+            } placeholder: {
+                ProgressView()
+            }
+            .frame(width: 100, height: 100)
+        } else {
+            (showShiny ? pokemon.shinyImage : pokemon.spriteImage)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+        }
+    }
 }
