@@ -19,7 +19,15 @@ struct ContentView: View {
     private var fetcher = FetchService()
     
     private var dynamicPredicate: Predicate<Pokemon> {
-        #Predicate<Pokemon> { pokemon in
+        let typeFilter = #Predicate<Pokemon> { pokemon in
+            if currentType != filterCaseAll {
+                pokemon.types.contains(where: { $0.contains(currentType) })
+            } else {
+                true
+            }
+        }
+        
+        let generalFilter = #Predicate<Pokemon> { pokemon in
             if filterByFavorite && !searchText.isEmpty {
                 pokemon.favorite && pokemon.name.localizedStandardContains(searchText)
             } else if !searchText.isEmpty {
@@ -30,10 +38,15 @@ struct ContentView: View {
                 true
             }
         }
+        
+        return #Predicate<Pokemon> { pokemon in
+            typeFilter.evaluate(pokemon) && generalFilter.evaluate(pokemon)
+        }
     }
     
     @State private var showShiny: Bool = false
-    @State var currentType: PokemonFilterType = PokemonFilterType.all
+    @State var currentType: String = PokemonFilterType.all.rawValue
+    private let filterCaseAll: String = PokemonFilterType.all.rawValue
  
     var body: some View {
         if pokedex.isEmpty {
@@ -121,7 +134,7 @@ struct ContentView: View {
                                     Text(type.icon + " " + type.rawValue.capitalized).tag(type.rawValue)
                                 }
                             }
-                            .pickerStyle(.menu)
+//                            .pickerStyle(.menu)
                         } label: {
                             Label("Filter", systemImage: "line.horizontal.3.decrease.circle")
                         }
