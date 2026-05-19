@@ -15,8 +15,12 @@ struct ContentView: View {
     
     @State private var searchText: String = ""
     @State private var filterByFavorite: Bool = false
+    @State private var showShiny: Bool = false
   
     private var fetcher = FetchService()
+    
+    @State var currentType: String = PokemonFilterType.all.rawValue
+    private let filterCaseAll: String = PokemonFilterType.all.rawValue
     
     private var dynamicPredicate: Predicate<Pokemon> {
         let typeFilter = #Predicate<Pokemon> { pokemon in
@@ -43,10 +47,6 @@ struct ContentView: View {
             typeFilter.evaluate(pokemon) && generalFilter.evaluate(pokemon)
         }
     }
-    
-    @State private var showShiny: Bool = false
-    @State var currentType: String = PokemonFilterType.all.rawValue
-    private let filterCaseAll: String = PokemonFilterType.all.rawValue
  
     var body: some View {
         if pokedex.isEmpty {
@@ -164,8 +164,10 @@ struct ContentView: View {
         Task {
             do {
                 for pokemon in pokedex {
-                    pokemon.sprite = try await URLSession.shared.data(from: pokemon.spriteURL).0
-                    pokemon.shiny = try await URLSession.shared.data(from: pokemon.shinyURL).0
+                    pokemon.backDefault = try await URLSession.shared.data(from: pokemon.backDefaultURL).0
+                    pokemon.backShiny = try await URLSession.shared.data(from: pokemon.backShinyURL).0
+                    pokemon.frontDefault = try await URLSession.shared.data(from: pokemon.frontDefaultURL).0
+                    pokemon.frontShiny = try await URLSession.shared.data(from: pokemon.frontShinyURL).0
                     
                     try modelContext.save()
                     
@@ -224,15 +226,15 @@ struct PokemonImage: View {
     var showShiny: Bool
     
     var body: some View {
-        if pokemon.sprite == nil {
-            AsyncImage(url: showShiny ? pokemon.shinyURL : pokemon.spriteURL) { image in
+        if pokemon.backDefault == nil {
+            AsyncImage(url: showShiny ? pokemon.frontShinyURL : pokemon.frontDefaultURL) { image in
                 image.resizable()
             } placeholder: {
                 ProgressView()
             }
             .frame(width: 100, height: 100)
         } else {
-            (showShiny ? pokemon.shinyImage : pokemon.spriteImage)
+            (showShiny ? pokemon.frontShinyImage : pokemon.frontDefaultImage)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 100, height: 100)

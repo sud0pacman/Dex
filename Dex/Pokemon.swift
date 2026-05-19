@@ -21,10 +21,14 @@ class Pokemon: Decodable {
     var specialAttack: Int
     var specialDefense: Int
     var speed: Int
-    var spriteURL: URL
-    var shinyURL: URL
-    var sprite: Data?
-    var shiny: Data?
+    var backDefaultURL: URL
+    var backShinyURL: URL
+    var frontDefaultURL: URL
+    var frontShinyURL: URL
+    var backDefault: Data?
+    var backShiny: Data?
+    var frontDefault: Data?
+    var frontShiny: Data?
     var favorite: Bool = false
     
     enum CodingKeys: CodingKey {
@@ -47,8 +51,10 @@ class Pokemon: Decodable {
         }
         
         enum SpriteKeys: String, CodingKey {
-            case spriteURL = "frontDefault"
-            case shinyURL = "frontShiny"
+            case frontDefaultURL = "frontDefault"
+            case frontShinyURL = "frontShiny"
+            case backDefaultURL = "backDefault"
+            case backShinyURL = "backShiny"
         }
     }
     
@@ -99,13 +105,15 @@ class Pokemon: Decodable {
         speed = decodedStats[5]
         
         let spriteContainer = try container.nestedContainer(keyedBy: CodingKeys.SpriteKeys.self, forKey: .sprites)
-        spriteURL = try spriteContainer.decode(URL.self, forKey: .spriteURL)
-        shinyURL = try spriteContainer.decode(URL.self, forKey: .shinyURL)
+        backDefaultURL = try spriteContainer.decode(URL.self, forKey: .backDefaultURL)
+        backShinyURL = try spriteContainer.decode(URL.self, forKey: .backShinyURL)
+        frontDefaultURL = try spriteContainer.decode(URL.self, forKey: .frontDefaultURL)
+        frontShinyURL = try spriteContainer.decode(URL.self, forKey: .frontShinyURL)
     }
     
     @MainActor
-    var spriteImage: Image {
-        if let data = sprite, let image = UIImage(data: data) {
+    var backDefaultImage: Image {
+        if let data = backDefault, let image = UIImage(data: data) {
             Image(uiImage: image)
         } else {
             Image(.bulbasaur)
@@ -113,8 +121,26 @@ class Pokemon: Decodable {
     }
     
     @MainActor
-    var shinyImage: Image {
-        if let data = shiny, let image = UIImage(data: data) {
+    var backShinytImage: Image {
+        if let data = backShiny, let image = UIImage(data: data) {
+            Image(uiImage: image)
+        } else {
+            Image(.bulbasaur)
+        }
+    }
+    
+    @MainActor
+    var frontDefaultImage: Image {
+        if let data = frontDefault, let image = UIImage(data: data) {
+            Image(uiImage: image)
+        } else {
+            Image(.shinybulbasaur)
+        }
+    }
+    
+    @MainActor
+    var frontShinyImage: Image {
+        if let data = frontShiny, let image = UIImage(data: data) {
             Image(uiImage: image)
         } else {
             Image(.shinybulbasaur)

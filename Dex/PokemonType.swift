@@ -34,3 +34,16 @@ enum PokemonFilterType: String, CaseIterable {
         }
     }
 }
+
+enum PokemonImageType: String, CaseIterable {
+    case frontDefault, frontShiny, backDefault, backShiny
+    
+    var title: String {
+       switch self {
+       case .frontDefault: return "Front default"
+       case .frontShiny: return "Front shiny"
+       case .backDefault: return "Back default"
+       case .backShiny: return "Back shiny"
+        }
+    }
+}

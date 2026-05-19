@@ -14,6 +14,7 @@ struct PokemonDetail: View {
     var pokemon: Pokemon
     
     @State private var showShiny: Bool = false
+    @State private var currentImageType: PokemonImageType = .frontDefault
     
     var body: some View {
         ScrollView {
@@ -23,26 +24,7 @@ struct PokemonDetail: View {
                     .scaledToFit()
                     .shadow(color: .black, radius: 6)
                 
-                if pokemon.shiny == nil || pokemon.sprite == nil {
-                    AsyncImage(url: showShiny ? pokemon.shinyURL : pokemon.spriteURL) { image in
-                        image
-                            .interpolation(.none)
-                            .resizable()
-                            .scaledToFit()
-                            .padding(.top, 50)
-                            .shadow(color: .black, radius: 6)
-                        
-                    } placeholder: {
-                        ProgressView()
-                    }
-                } else {
-                    (showShiny ? pokemon.shinyImage : pokemon.spriteImage)
-                        .interpolation(.none)
-                        .resizable()
-                        .scaledToFit()
-                        .padding(.top, 50)
-                        .shadow(color: .black, radius: 6)
-                }
+                PokemonRandmonImage(pokemon: pokemon, pokemonImageType: currentImageType)
             }
             
             HStack {
@@ -87,14 +69,140 @@ struct PokemonDetail: View {
         .navigationTitle(pokemon.name.capitalized)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showShiny.toggle()
+                Menu {
+                    Picker("Image Options", selection: $currentImageType) {
+                        ForEach(PokemonImageType.allCases, id: \.self) { type in
+                            Text(type.title.capitalized)
+                                .tag(type)
+                        }
+                    }
                 } label: {
-                    Image(systemName: showShiny ? "wand.and.stars" : "wand.and.stars.inverse")
-                        .foregroundStyle(showShiny ? .yellow : .primary)
+                    Label("Filter", systemImage: "line.horizontal.3.decrease.circle")
                 }
             }
+            
+//            ToolbarItem(placement: .topBarTrailing) {
+//                Button {
+//                    showShiny.toggle()
+//                } label: {
+//                    Image(systemName: showShiny ? "wand.and.stars" : "wand.and.stars.inverse")
+//                        .foregroundStyle(showShiny ? .yellow : .primary)
+//                }
+//            }
         }
+    }
+}
+
+struct PokemonRandmonImage : View {
+    let pokemon: Pokemon
+    let pokemonImageType: PokemonImageType
+    
+    var body: some View {
+        switch pokemonImageType {
+        case .frontDefault:
+            if pokemon.frontDefault == nil {
+                AsyncImage(url: pokemon.frontDefaultURL) { image in
+                    image
+                        .interpolation(.none)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(.top, 50)
+                        .shadow(color: .black, radius: 6)
+                } placeholder: {
+                    ProgressView()
+                }
+            } else {
+                pokemon.frontDefaultImage
+                    .interpolation(.none)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(.top, 50)
+                    .shadow(color: .black, radius: 6)
+            }
+        case .backDefault:
+            if pokemon.backDefault == nil {
+                AsyncImage(url: pokemon.backDefaultURL) { image in
+                    image
+                        .interpolation(.none)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(.top, 50)
+                        .shadow(color: .black, radius: 6)
+                } placeholder: {
+                    ProgressView()
+                }
+            } else {
+                pokemon.backDefaultImage
+                    .interpolation(.none)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(.top, 50)
+                    .shadow(color: .black, radius: 6)
+            }
+        case .backShiny:
+            if pokemon.backShiny == nil {
+                AsyncImage(url: pokemon.backShinyURL) { image in
+                    image
+                        .interpolation(.none)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(.top, 50)
+                        .shadow(color: .black, radius: 6)
+                } placeholder: {
+                    ProgressView()
+                }
+            } else {
+                pokemon.backShinytImage
+                    .interpolation(.none)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(.top, 50)
+                    .shadow(color: .black, radius: 6)
+            }
+        case .frontShiny:
+            if pokemon.frontShiny == nil {
+                AsyncImage(url: pokemon.frontShinyURL) { image in
+                    image
+                        .interpolation(.none)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(.top, 50)
+                        .shadow(color: .black, radius: 6)
+                } placeholder: {
+                    ProgressView()
+                }
+            } else {
+                pokemon.frontShinyImage
+                    .interpolation(.none)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(.top, 50)
+                    .shadow(color: .black, radius: 6)
+            }
+        }
+        
+        
+//        if pokemon.shiny == nil || pokemon.sprite == nil {
+//            AsyncImage(url: showShiny ? pokemon.shinyURL : pokemon.spriteURL) { image in
+//                image
+//                    .interpolation(.none)
+//                    .resizable()
+//                    .scaledToFit()
+//                    .padding(.top, 50)
+//                    .shadow(color: .black, radius: 6)
+//                
+//            } placeholder: {
+//                ProgressView()
+//            }
+//        } else {
+//            (showShiny ? pokemon.shinyImage : pokemon.spriteImage)
+//                .interpolation(.none)
+//                .resizable()
+//                .scaledToFit()
+//                .padding(.top, 50)
+//                .shadow(color: .black, radius: 6)
+//        }
+//    }
     }
 }
 
