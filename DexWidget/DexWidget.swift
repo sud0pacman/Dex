@@ -46,7 +46,7 @@ struct Provider: TimelineProvider {
                         date: entryDate,
                         name: entryPokemon.name,
                         types: entryPokemon.types,
-                        sprite: entryPokemon.backDefaultImage)
+                        sprite: entryPokemon.frontDefaultImage)
                     entries.append(entry)
                 }
                 

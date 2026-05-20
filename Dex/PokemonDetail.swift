@@ -63,8 +63,6 @@ struct PokemonDetail: View {
                 .padding(.bottom, -7)
             
             Stats(pokemon: pokemon)
-            
-             
         }
         .navigationTitle(pokemon.name.capitalized)
         .toolbar {
